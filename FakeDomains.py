@@ -29,7 +29,7 @@ def fakeDomainChecker(search):
         print(Exception)
 
     soup = BeautifulSoup(source.text,"html.parser")
-    span= soup.find('span', {'class':'gL9Hy d2IKib'})
+    span= soup.find_all('span', {'class':'gL9Hy'})
     spans = soup.find_all('div')
     heads = soup.find_all('div', {'class':'TbwUpd'})
     heads2 = soup.find_all('div', {'class':'Zu0yb LWAWHf qzEoUe"'} )
@@ -65,7 +65,7 @@ def fakeDomainChecker(search):
             sended_number = sended_number + 0
 
 
-    # Checking for "another result has been found"
+    # Checking for spell checking"
     if span != None :
         sended_number = sended_number +1
     else:
@@ -74,3 +74,5 @@ def fakeDomainChecker(search):
 
     return sended_number
 
+
+print(fakeDomainChecker("egsisozluk.com"))

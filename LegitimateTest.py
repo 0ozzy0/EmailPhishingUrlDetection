@@ -35,7 +35,10 @@ def generate_data_set(url):
             domain = domain.replace("www.","")
 
 
-    whois_response = whois.whois(domain)
+    try:
+        whois_response = whois.whois(domain)
+    except:
+        pass
 
 
     rank_checker_response = requests.post("https://www.checkpagerank.net/index.php", {
@@ -52,22 +55,22 @@ def generate_data_set(url):
     try:
         ipaddress.ip_address(url)
         data_set[0] = -1
-        print("ip address -1")
+        #print("ip address -1")
     except:
         data_set[0] = 1
-        print("ip address 1")
+        #print("ip address 1")
         pass
 
     #url length
     if len(url) < 54:
         data_set[1] = 1
-        print("url length 1")
+        #print("url length 1")
     elif len(url) >= 54 and len(url) <= 75:
         data_set[1] = 0
-        print("url length 0")
+        #print("url length 0")
     else:
         data_set[1] = -1
-        print("url length -1")
+        #print("url length -1")
 
     #shortining services
     match=re.search('bit\.ly|goo\.gl|shorte\.st|go2l\.ink|x\.co|ow\.ly|t\.co|tinyurl|tr\.im|is\.gd|cli\.gs|'
@@ -78,64 +81,67 @@ def generate_data_set(url):
                     'q\.gs|is\.gd|po\.st|bc\.vc|twitthis\.com|u\.to|j\.mp|buzurl\.com|cutt\.us|u\.bb|yourls\.org|'
                     'x\.co|prettylinkpro\.com|scrnch\.me|filoops\.info|vzturl\.com|qr\.net|1url\.com|tweez\.me|v\.gd|tr\.im|link\.zip\.net',url)
     if match:
-        print("shortining service -1")
+        #print("shortining service -1")
         data_set[2] = -1
     else:
-        print("shortining service 1")
+        #print("shortining service 1")
         data_set[2] = 1
 
     #at existence
     if re.findall("@", url):
-        print("@ existence -1")
+        #print("@ existence -1")
         data_set[3] = -1
     else:
-        print("@ existence 1")
+        #print("@ existence 1")
         data_set[3] = 1
 
     # // redirecting
     list=[x.start(0) for x in re.finditer('//', url)]
     if list[len(list)-1]>6:
-        print("redirecting -1")
+        #print("redirecting -1")
         data_set[4] = -1
     else:
-        print("redirecting 1")
+        #print("redirecting 1")
         data_set[4] = 1
 
     # Prefix suffix
     if re.findall(r"https?://[^\-]+-[^\-]+/", url):
-        print("Prefix suffix -1")
+        #print("Prefix suffix -1")
         data_set[5] = -1
     else:
-        print("Prefix suffix 1")
+        #print("Prefix suffix 1")
         data_set[5] = 1
 
     # subdomains existence
     if len(re.findall("../venv", url)) == 1:
-        print("subdomains 1")
+        #print("subdomains 1")
         data_set[6] = 1
     elif len(re.findall("../venv", url)) == 2:
-        print("subdomains 0")
+        #print("subdomains 0")
         data_set[6] = 0
     else:
-        print("subdomains -1")
+        #print("subdomains -1")
         data_set[6] = -1
 
     #SSLfinalstate
     try:
         if response.text:
-            print("SSL 1")
+            #print("SSL 1")
             data_set[7] = 1
         else:
-            print("SSL -1")
+            #print("SSL -1")
             data_set[7] = -1
     except:
-        print("SSL -1")
+        #print("SSL -1")
         data_set[7] = -1
 
 
 
     # registration length
-    expiration_date = whois_response.expiration_date
+    try:
+        expiration_date = whois_response.expiration_date
+    except:
+        pass
     registration_length = 0
     try:
         expiration_date = min(expiration_date)
@@ -144,20 +150,20 @@ def generate_data_set(url):
         registration_length = abs((expiration_date - today).days)
 
         if registration_length / 365 <= 1:
-            print("registration length -1")
+            #print("registration length -1")
             data_set[8] = -1
         else:
-            print("registration length 1")
+            #print("registration length 1")
             data_set[8] = 1
     except:
-        print("registration length -1")
+        #print("registration length -1")
         data_set[8] = -1
 
 
     #Favicon
 
     if soup == -999:
-        print("favicon -1")
+        #print("favicon -1")
         data_set[9] = -1
 
     else:
@@ -166,15 +172,15 @@ def generate_data_set(url):
                 for head.link in soup.find_all('link', href=True):
                     dots = [x.start(0) for x in re.finditer('../venv', head.link['href'])]
                     if url in head.link['href'] or len(dots) == 1 or domain in head.link['href']:
-                        print("favicon 1")
+                        #print("favicon 1")
                         data_set[9] = 1
                         raise StopIteration
                     else:
-                        print("favicon -1")
+                        #print("favicon -1")
                         data_set[9] = -1
                         raise StopIteration
         except StopIteration:
-            print("favicon -1")
+            #print("favicon -1")
             data_set[9] = -1
             pass
 
@@ -183,27 +189,27 @@ def generate_data_set(url):
     try:
         port = domain.split(":")[1]
         if port:
-            print("port -1")
+            #print("port -1")
             data_set[10] = -1
         else:
-            print("port 1")
+            #print("port 1")
             data_set[10] = 1
     except:
-        print("port -1")
+        #print("port -1")
         data_set[10] = -1
 
     # https
     if re.findall(r"^https://", url):
-        print("https 1")
+        #print("https 1")
         data_set[11] = 1
     else:
-        print("https -1")
+        #print("https -1")
         data_set[11] = -1
     # request_url
     i = 0
     success = 0
     if soup == -999:
-        print("request url -1")
+        #print("request url -1")
         data_set[12] = -1
     else:
         for img in soup.find_all('img', src= True):
@@ -233,16 +239,16 @@ def generate_data_set(url):
         try:
            percentage = success/float(i) * 100
            if percentage < 22.0 :
-              print("request url 1")
+              #print("request url 1")
               data_set[12] = 1
            elif((percentage >= 22.0) and (percentage < 61.0)) :
-              print("request url 0")
+              #print("request url 0")
               data_set[12] = 0
            else :
-              print("request url -1")
+              #print("request url -1")
               data_set[12] = -1
         except:
-            print("request url 1")
+            #print("request url 1")
             data_set[12] = 1
 
     # url of anchor
@@ -250,7 +256,7 @@ def generate_data_set(url):
     i = 0
     unsafe=0
     if soup == -999:
-        print("url of anchor -1")
+        #print("url of anchor -1")
         data_set[13] = -1
     else:
         for a in soup.find_all('a', href=True):
@@ -262,18 +268,18 @@ def generate_data_set(url):
         try:
             percentage = unsafe / float(i) * 100
             if percentage < 31.0:
-                print("url of anchor 1")
+                #print("url of anchor 1")
                 data_set[13] = 1
             elif ((percentage >= 31.0) and (percentage < 67.0)):
-                print("url of anchor 0")
+                #print("url of anchor 0")
                 data_set[13] = 0
             else:
-                print("url of anchor -1")
+                #print("url of anchor -1")
                 data_set[13] = -1
 
 
         except:
-            print("url of anchor 1")
+            #print("url of anchor 1")
             data_set[13] = 1
 
 
@@ -283,7 +289,7 @@ def generate_data_set(url):
     i=0
     success =0
     if soup == -999:
-        print("link in tags -1")
+        #print("link in tags -1")
         data_set[14] = -1
     else:
         for link in soup.find_all('link', href= True):
@@ -300,16 +306,16 @@ def generate_data_set(url):
         try:
             percentage = success / float(i) * 100
             if percentage < 17.0:
-                print("link in tags 1")
+                #print("link in tags 1")
                 data_set[14] = 1
             elif ((percentage >= 17.0) and (percentage < 81.0)):
-                print("link in tags 0")
+                #print("link in tags 0")
                 data_set[14] = 0
             else:
-                print("link in tags -1")
+                #print("link in tags -1")
                 data_set[14] = -1
         except:
-            print("link in tags 1")
+            #print("link in tags 1")
             data_set[14] = 1
 
 
@@ -319,119 +325,119 @@ def generate_data_set(url):
         if soup.find_all('form' ,action=True) :
             for form in soup.find_all('form', action= True):
                if form['action'] =="" or form['action'] == "about:blank" :
-                  print("SFH -1")
+                  #print("SFH -1")
                   data_set[15] = -1
                   break
                elif url not in form['action'] and domain not in form['action']:
-                   print("SFH 0")
+                   #print("SFH 0")
                    data_set[15] = 0
                    break
                else:
-                print("SFH 1")
+                #print("SFH 1")
                 data_set[15] = 1
                 break
         else:
-            print("SFH -1")
+            #print("SFH -1")
             data_set[15] = -1
     # email submitting
     if response == "":
-        print("email submitting -1")
+        #print("email submitting -1")
         data_set[16] = -1
     else:
         if re.findall(r"[mail\(\)|mailto:?]", response.text):
-            print("email submitting 1")
+            #print("email submitting 1")
             data_set[16] = 1
         else:
-            print("email submitting -1")
+            #print("email submitting -1")
             data_set[16] = -1
     # abnormal url
     if response == "":
-        print("abnormal url -1")
+        #print("abnormal url -1")
         data_set[17] = -1
     else:
         if response.text == "":
-            print("abnormal url 1")
+            #print("abnormal url 1")
             data_set[17] = 1
         else:
-            print("abnormal url -1")
+            #print("abnormal url -1")
             data_set[17] = -1
 
     # redirect
     if response == "":
-        print("redirect -1")
+        #print("redirect -1")
         data_set[18] = -1
     else:
         if len(response.history) <= 1:
-            print("redirect -1")
+            #print("redirect -1")
             data_set[18] = -1
         elif len(response.history) <= 4:
-            print("redirect 0")
+            #print("redirect 0")
             data_set[18] = 0
         else:
-            print("redirect 1")
+            #print("redirect 1")
             data_set[18] = 1
     # mouseover
     if response == "" :
-        print("mouseover -1")
+        #print("mouseover -1")
         data_set[19] = -1
     else:
         if re.findall("<script>.+onmouseover.+</script>", response.text):
-            print("mouseover 1")
+            #print("mouseover 1")
             data_set[19] = 1
         else:
-            print("mouseover -1")
+            #print("mouseover -1")
             data_set[19] = -1
     # right click
     if response == "":
-        print("right click -1")
+        #print("right click -1")
         data_set[20] = -1
     else:
         if re.findall(r"event.button ?== ?2", response.text):
-            print("right click 1")
+            #print("right click 1")
             data_set[20] = 1
         else:
-            print("right click -1")
+            #print("right click -1")
             data_set[20] = -1
 
     # popup
     if response == "":
-        print("popup -1")
+        #print("popup -1")
         data_set[21] = -1
     else:
         if re.findall(r"alert\(", response.text):
-            print("popup 1")
+            #print("popup 1")
             data_set[21] = 1
         else:
-            print("popup -1")
+            #print("popup -1")
             data_set[21] = -1
 
     # Iframe
     if response == "":
-        print("Iframe -1")
+        #print("Iframe -1")
         data_set[22] = -1
     else:
         if re.findall(r"[<iframe>|<frameBorder>]", response.text):
-            print("Iframe 1")
+            #print("Iframe 1")
             data_set[22] = 1
         else:
-            print("Iframe -1")
+            #print("Iframe -1")
             data_set[22] = -1
     # age of domain
     if response == "":
-        print("age of domain -1")
+        #print("age of domain -1")
         data_set[23] = -1
     else:
         try:
             registration_date = re.findall(r'Registration Date:</div><div class="df-value">([^<]+)</div>', whois_response.text)[0]
 
             if diff_month(date.today(), date_parse(registration_date)) >= 6:
-                print("age of domain -1")
+                #print("age of domain -1")
                 data_set[23] = -1
             else:
-                print("age of domain 1")
+                #print("age of domain 1")
                 data_set[23] = 1
         except:
-            print("age of domain 1")
+            #print("age of domain 1")
             data_set[23] = 1
 
 
@@ -443,14 +449,14 @@ def generate_data_set(url):
         dns=-1
 
     if dns == -1:
-        print("Dns Record -1")
+        #print("Dns Record -1")
         data_set[24] = -1
     else:
         if registration_length / 365 <= 1:
-            print("Dns Record -1")
+            #print("Dns Record -1")
             data_set[24] = -1
         else:
-            print("Dns Record 1")
+            #print("Dns Record 1")
             data_set[24] = 1
 
     #web traffic
@@ -458,26 +464,26 @@ def generate_data_set(url):
         rank = BeautifulSoup(urllib.request.urlopen("http://data.alexa.com/data?cli=10&dat=s&url=" + url).read(), "xml").find("REACH")['RANK']
         rank= int(rank)
         if (rank<100000):
-            print("web traffic 1")
+            #print("web traffic 1")
             data_set[25] = 1
         else:
-            print("web traffic 0")
+            #print("web traffic 0")
             data_set[25] = 0
     except TypeError:
-        print("web traffic -1")
+        #print("web traffic -1")
         data_set[25] = -1
 
 
     #page rank
     try:
         if global_rank > 0 and global_rank < 100000:
-            print("page rank -1")
+            #print("page rank -1")
             data_set[26] = -1
         else:
-            print("page rank 1")
+            #print("page rank 1")
             data_set[26] = -1
     except:
-        print("page rank 1")
+        #print("page rank 1")
         data_set[26] = 1
 
 
@@ -485,26 +491,26 @@ def generate_data_set(url):
     site= search(url,5)
 
     if site:
-        print("google index 1")
+        #print("google index 1")
         data_set[27] = 1
     else:
-        print("google index -1")
+        #print("google index -1")
         data_set[27] = -1
 
     #link pointing to page
     if response == "":
-        print("link pointing to page -1")
+        #print("link pointing to page -1")
         data_set[28] = -1
     else:
         number_of_links = len(re.findall(r"<a href=", response.text))
         if number_of_links == 0:
-            print("link pointing to page 1")
+            #print("link pointing to page 1")
             data_set[28] = 1
         elif number_of_links <= 2:
-            print("link pointing to page 0")
+            #print("link pointing to page 0")
             data_set[28] = 0
         else:
-            print("link pointing to page -1")
+            #print("link pointing to page -1")
             data_set[28] = -1
     #statistical report
     url_match=re.search('at\.ua|usa\.cc|baltazarpresentes\.com\.br|pe\.hu|esy\.es|hol\.es|sweddy\.com|myjino\.ru|96\.lt|ow\.ly',url)
@@ -517,18 +523,18 @@ def generate_data_set(url):
                            '34\.196\.13\.28|103\.224\.212\.222|172\.217\.4\.225|54\.72\.9\.51|192\.64\.147\.141|198\.200\.56\.183|23\.253\.164\.103|52\.48\.191\.26|52\.214\.197\.72|87\.98\.255\.18|209\.99\.17\.27|'
                            '216\.38\.62\.18|104\.130\.124\.96|47\.89\.58\.141|78\.46\.211\.158|54\.86\.225\.156|54\.82\.156\.19|37\.157\.192\.102|204\.11\.56\.48|110\.34\.231\.42',ip_address)
         if url_match:
-            print("statistical report -1")
+            # print("statistical report -1")
             data_set[29] = -1
         elif ip_match:
-            print("statistical report -1")
+            #print("statistical report -1")
             data_set[29] = -1
         else:
-            print("statistical report 1")
+            #print("statistical report 1")
             data_set[29] = 1
     except:
-        print("statistical report -1")
+        #print("statistical report -1")
         data_set[29] = -1
-        print ('Lütfen bağlantınızı kontrol ediniz!!')
+        # print ('Lütfen bağlantınızı kontrol ediniz!!')
 
     return data_set
 

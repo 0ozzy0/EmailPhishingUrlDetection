@@ -23,7 +23,6 @@ def connect_email_account():
 print("Dünün ve bugünün okunmamış mailleri değerlendirilecek.")
 
 url_checked_list = []
-mail_checked_list = []
 mydic = [  {"urls" : [], "sender" : ""} ]
 
 def find_links():
@@ -48,9 +47,11 @@ def find_links():
 while 0 < 1:
     find_links()
     for dictionary in mydic:
+        mail_checked_list = []
         i = 0
         for url in dictionary["urls"]:
             if url not in url_checked_list:
+
                     url_checked_list.append(url)
                     i += 1
                     if not re.match(r"^https?", url):

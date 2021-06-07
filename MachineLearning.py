@@ -32,7 +32,7 @@ def randomForestChecker(url):
     Take_X  = LegitimateTest.generate_data_set(url)
 
     for index, number in enumerate(Take_X):
-        print(number)
+        #print(number)
         if number == 9:
             Take_X[index] = -1
 
@@ -42,7 +42,7 @@ def randomForestChecker(url):
             Take_X[index] = -1
 
     Take_X = np.array(Take_X).reshape(1,-1)
-    print(Take_X)
+    #print(Take_X)
 
     try:
         prediction = model.predict(Take_X)
@@ -57,10 +57,10 @@ def randomForestChecker(url):
         print("Hata: " +str(ex))
 
 
-feature_list = list(X.columns)
+"""feature_list = list(X.columns)
 feature_imp = pd.Series(model.feature_importances_,index=feature_list).sort_values(ascending=False)
-print(feature_imp)
+print(feature_imp)"""
 
 
-print(randomForestChecker("www.youtube.com"))
+#print(randomForestChecker(	"https://arnazori-co-jp.iaycw.bar/"))
 
