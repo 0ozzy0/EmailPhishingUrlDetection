@@ -6,10 +6,12 @@ import MachineLearning as RF
 import FakeDomains as FD
 import time
 import email
+from win10toast import ToastNotifier
 
 email_user = input("Lütfen Email Adresini Giriniz: ")
 email_pass = getpass.getpass(prompt='Lütfen Şifrenizi Giriniz: ')
 
+toaster = ToastNotifier()
 def connect_email_account():
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
     try:
@@ -50,21 +52,25 @@ while 0 < 1:
         mail_checked_list = []
         i = 0
         for url in dictionary["urls"]:
-            if url not in url_checked_list:
+            if not re.match(r"^https?", url):
+                url = "http://" + url
+            domain = re.findall(r"://([^/]+)/?", url)[0]
+            if re.match(r"^www.", domain):
+                domain = domain.replace("www.", "")
+            if domain not in url_checked_list:
 
-                    url_checked_list.append(url)
+                    url_checked_list.append(domain)
                     i += 1
-                    if not re.match(r"^https?", url):
-                        url= "http://" + url
                     if (RF.randomForestChecker(url) == url + " Kriter Testinden Geçemedi!!!"):
-                        print(RF.randomForestChecker(url))
+                        print("Bir mailinizde tespit edilen " +url +" Kriter Testinden Geçemedi!!!")
+                        respond = RF.randomForestChecker(url)
+                        toaster.show_toast(respond)
                         mail_checked_list.append(dictionary["sender"])
-                    domain = re.findall(r"://([^/]+)/?", url)[0]
-                    if re.match(r"^www.", domain):
-                        domain = domain.replace("www.", "")
-                    url_checked_list.append(url)
+
                     if FD.fakeDomainChecker(domain) != 0:
-                        print(domain +" domain adresi sahte olabilir! lütfen kontrol ediniz.")
+                        print("Bir mailinizde tespit edilen " +domain +" domain adresi sahte olabilir! lütfen kontrol ediniz.")
+                        respond= domain +" domain adresi sahte olabilir! lütfen kontrol ediniz."
+                        toaster.show_toast(respond)
                         mail_checked_list.append(dictionary["sender"])
 
         #print("Mailde toplam " +str(i) +" adet link bulundu")

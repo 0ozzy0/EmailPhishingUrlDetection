@@ -283,8 +283,6 @@ def generate_data_set(url):
             data_set[13] = 1
 
 
-
-
     # links in tags
     i=0
     success =0
