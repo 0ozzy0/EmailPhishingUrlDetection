@@ -11,7 +11,13 @@ from win10toast import ToastNotifier
 email_user = input("Lütfen Email Adresini Giriniz: ")
 email_pass = getpass.getpass(prompt='Lütfen Şifrenizi Giriniz: ')
 
+print("Dünün ve bugünün okunmamış mailleri değerlendirilecek.")
+
+url_checked_list = []
+mydic = [  {"urls" : [], "sender" : ""} ]
+
 toaster = ToastNotifier()
+
 def connect_email_account():
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
     try:
@@ -22,10 +28,7 @@ def connect_email_account():
     except Exception as e:
              print("Mail adresinize bağlanırken bir hata oluştu. Lütfen kullanıcı adınızı ve şifrenizi kontrol ediniz.")
 
-print("Dünün ve bugünün okunmamış mailleri değerlendirilecek.")
 
-url_checked_list = []
-mydic = [  {"urls" : [], "sender" : ""} ]
 
 def find_links():
     yesterday = (date.today() - timedelta(1)).strftime("%d-%b-%Y")
@@ -46,6 +49,7 @@ def find_links():
         temp_dic["sender"] = email_message["from"]
         mydic.append(temp_dic)
 
+
 while 0 < 1:
     find_links()
     for dictionary in mydic:
@@ -58,15 +62,14 @@ while 0 < 1:
             if re.match(r"^www.", domain):
                 domain = domain.replace("www.", "")
             if domain not in url_checked_list:
-
-                    url_checked_list.append(domain)
-                    i += 1
-                    if (RF.randomForestChecker(url) == url + " Kriter Testinden Geçemedi!!!"):
-                        print("Bir mailinizde tespit edilen " +url +" Kriter Testinden Geçemedi!!!")
-                        respond = RF.randomForestChecker(url)
-                        toaster.show_toast(respond)
-                        mail_checked_list.append(dictionary["sender"])
-
+                url_checked_list.append(domain)
+                i += 1
+                if (RF.randomForestChecker(url) == url + " Kriter Testinden Geçemedi!!!"):
+                    print("Bir mailinizde tespit edilen " +url +" Kriter Testinden Geçemedi!!!")
+                    respond = RF.randomForestChecker(url)
+                    toaster.show_toast(respond)
+                    mail_checked_list.append(dictionary["sender"])
+                if (RF.randomForestChecker(url) != url + " Kriter Testinden Geçemedi!!!"):
                     if FD.fakeDomainChecker(domain) != 0:
                         print("Bir mailinizde tespit edilen " +domain +" domain adresi sahte olabilir! lütfen kontrol ediniz.")
                         respond= domain +" domain adresi sahte olabilir! lütfen kontrol ediniz."
@@ -79,5 +82,7 @@ while 0 < 1:
 
 
     time.sleep(60)
+
+
 
 

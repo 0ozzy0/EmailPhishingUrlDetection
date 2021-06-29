@@ -66,7 +66,6 @@ def fakeDomainChecker(search):
         else:
             sended_number = sended_number + 0
 
-
     # Checking for spell checking"
     if spans != None:
         sended_number = sended_number +1
@@ -74,7 +73,9 @@ def fakeDomainChecker(search):
     else:
         sended_number = sended_number + 0
 
+
     return sended_number
 
 
-#print(fakeDomainChecker("www.twotter.com"))
+
+
