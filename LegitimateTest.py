@@ -34,6 +34,7 @@ def generate_data_set(url):
     if re.match(r"^www.",domain):
             domain = domain.replace("www.","")
 
+    site_name = url.split("www.")[-1].split("//")[-1].split(".")[0]
 
     try:
         whois_response = whois.whois(domain)
@@ -105,7 +106,7 @@ def generate_data_set(url):
         data_set[4] = 1
 
     # Prefix suffix
-    if re.findall(r"https?://[^\-]+-[^\-]+/", url):
+    if re.findall(r"-", domain):
         #print("Prefix suffix -1")
         data_set[5] = -1
     else:
@@ -113,40 +114,51 @@ def generate_data_set(url):
         data_set[5] = 1
 
     # subdomains existence
-    if len(re.findall("../venv", url)) == 1:
+    if len(re.findall("\.", domain)) ==1 :
         #print("subdomains 1")
         data_set[6] = 1
-    elif len(re.findall("../venv", url)) == 2:
+    elif len(re.findall("\.", domain)) == 2:
         #print("subdomains 0")
         data_set[6] = 0
     else:
         #print("subdomains -1")
         data_set[6] = -1
 
-    #SSLfinalstate
+    #SSLfinalstate (https in url)
     try:
-        if response.text:
-            #print("SSL 1")
+        creation_date = whois_response.creation_date
+    except:
+        pass
+
+    try:
+        today = time.strftime('%Y-%m-%d')
+        today = datetime.strptime(today, '%Y-%m-%d')
+        site_age = abs((creation_date - today).days)
+
+
+        if not re.findall(r"^https://", url):
+             data_set[7] = -1
+        if re.findall(r"^https://", url) and site_age > 365:
             data_set[7] = 1
         else:
-            #print("SSL -1")
-            data_set[7] = -1
-    except:
-        #print("SSL -1")
-        data_set[7] = -1
+            data_set[7] = 0
 
+    except:
+        pass
 
 
     # registration length
+    registration_length = 0
+
     try:
+        today = time.strftime('%Y-%m-%d')
+        today = datetime.strptime(today, '%Y-%m-%d')
         expiration_date = whois_response.expiration_date
     except:
         pass
-    registration_length = 0
+
     try:
-        expiration_date = min(expiration_date)
-        today = time.strftime('%Y-%m-%d')
-        today = datetime.strptime(today, '%Y-%m-%d')
+
         registration_length = abs((expiration_date - today).days)
 
         if registration_length / 365 <= 1:
@@ -198,13 +210,13 @@ def generate_data_set(url):
         #print("port -1")
         data_set[10] = -1
 
-    # https
-    if re.findall(r"^https://", url):
+    # https in domain
+    if re.findall(r"^https://", domain):
         #print("https 1")
-        data_set[11] = 1
+        data_set[11] = -1
     else:
         #print("https -1")
-        data_set[11] = -1
+        data_set[11] = 1
     # request_url
     i = 0
     success = 0
@@ -317,8 +329,6 @@ def generate_data_set(url):
             data_set[14] = 1
 
 
-
-
         # SFH
         if soup.find_all('form' ,action=True) :
             for form in soup.find_all('form', action= True):
@@ -349,15 +359,18 @@ def generate_data_set(url):
             #print("email submitting -1")
             data_set[16] = -1
     # abnormal url
+
     if response == "":
-        #print("abnormal url -1")
         data_set[17] = -1
+
     else:
-        if response.text == "":
-            #print("abnormal url 1")
-            data_set[17] = 1
-        else:
-            #print("abnormal url -1")
+        try:
+            if re.findall(site_name.capitalize(), whois_response.org):
+                data_set[17] = 1
+            else:
+                data_set[17] = -1
+
+        except:
             data_set[17] = -1
 
     # redirect
@@ -479,7 +492,7 @@ def generate_data_set(url):
             data_set[26] = -1
         else:
             #print("page rank 1")
-            data_set[26] = -1
+            data_set[26] = 1
     except:
         #print("page rank 1")
         data_set[26] = 1
@@ -502,14 +515,14 @@ def generate_data_set(url):
     else:
         number_of_links = len(re.findall(r"<a href=", response.text))
         if number_of_links == 0:
-            #print("link pointing to page 1")
-            data_set[28] = 1
+            #print("link pointing to page -1")
+            data_set[28] = -1
         elif number_of_links <= 2:
             #print("link pointing to page 0")
             data_set[28] = 0
         else:
-            #print("link pointing to page -1")
-            data_set[28] = -1
+            #print("link pointing to page 1")
+            data_set[28] = 1
     #statistical report
     url_match=re.search('at\.ua|usa\.cc|baltazarpresentes\.com\.br|pe\.hu|esy\.es|hol\.es|sweddy\.com|myjino\.ru|96\.lt|ow\.ly',url)
     try:
@@ -535,4 +548,8 @@ def generate_data_set(url):
         # print ('Lütfen bağlantınızı kontrol ediniz!!')
 
     return data_set
+
+
+
+# CREDITS TO swagster420 ( https://github.com/swagster420/Phishing-Url-Detection-Using-Machine-Learning/blob/master/feature_extraction.py )
 

@@ -36,6 +36,7 @@ def randomForestChecker(url):
             Take_X[index] = -1
 
     Take_X = np.array(Take_X).reshape(1,-1)
+
     try:
         prediction = model.predict(Take_X)
         #print("prediction : " +str(prediction))
@@ -54,6 +55,8 @@ def randomForestChecker(url):
 feature_imp = pd.Series(model.feature_importances_,index=feature_list).sort_values(ascending=False)
 feature_imp.plot(kind="bar")
 plt.show()"""
+
+
 
 
 
