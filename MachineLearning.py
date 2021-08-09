@@ -6,15 +6,15 @@ from sklearn.ensemble import RandomForestClassifier as RFC
 from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
 
-df = pd.read_csv("dataset.csv")
+df = pd.read_csv("dataset2.csv")
 df = df.dropna()
 
 #dependent variable
-Y = df['LegitimateOrNot'].values
+Y = df['Result'].values
 Y = Y.astype('int')
 
 #independent variables
-X = df.drop(labels=['LegitimateOrNot'], axis =1)
+X = df.drop(labels=['Result'], axis =1)
 
 #Split data into train and test datasets
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.05, random_state=20)
@@ -36,6 +36,7 @@ def randomForestChecker(url):
             Take_X[index] = -1
 
     Take_X = np.array(Take_X).reshape(1,-1)
+    print("Accuracy: ", metrics.accuracy_score(Y_test, prediction_test))
 
     try:
         prediction = model.predict(Take_X)
@@ -56,6 +57,8 @@ feature_imp = pd.Series(model.feature_importances_,index=feature_list).sort_valu
 feature_imp.plot(kind="bar")
 plt.show()"""
 
+
+print(randomForestChecker("https://www.facebook.com"))
 
 
 

@@ -1,6 +1,8 @@
+import concurrent
 import imaplib
 import re
 import getpass
+import threading
 from datetime import datetime, date, timedelta
 import MachineLearning as RF
 import FakeDomains as FD
@@ -15,7 +17,6 @@ print("Dünün ve bugünün okunmamış mailleri değerlendirilecek.")
 
 url_checked_list = []
 mydic = [  {"urls" : [], "sender" : ""} ]
-
 toaster = ToastNotifier()
 
 def connect_email_account():
@@ -27,7 +28,6 @@ def connect_email_account():
 
     except Exception as e:
              print("Mail adresinize bağlanırken bir hata oluştu. Lütfen kullanıcı adınızı ve şifrenizi kontrol ediniz.")
-
 
 
 def find_links():
@@ -50,38 +50,61 @@ def find_links():
         mydic.append(temp_dic)
 
 
+def the_function(url_list):
+
+    sender = ""
+    need = 0
+    i = 0
+    for url in url_list:
+        if not re.match(r"^https?", url):
+            url = "http://" + url
+        domain = re.findall(r"://([^/]+)/?", url)[0]
+        if re.match(r"^www.", domain):
+            domain = domain.replace("www.", "")
+        if domain not in url_checked_list:
+            url_checked_list.append(domain)
+            i += 1
+            if (RF.randomForestChecker(url) == url + " Kriter Testinden Geçemedi!!!"):
+                need = 1
+                print ("Bir mailinizde tespit edilen " + url + " Kriter Testinden Geçemedi!!!")
+                respond = RF.randomForestChecker(url)
+                toaster.show_toast(respond)
+                sender = mydic[i]["sender"]
+            if need == 0:
+                if FD.fakeDomainChecker(domain) != 0:
+                    need = 1
+                    print("Bir mailinizde tespit edilen " + domain + " domain adresi sahte olabilir! lütfen kontrol ediniz.")
+                    respond = domain + " domain adresi sahte olabilir! lütfen kontrol ediniz."
+                    toaster.show_toast(respond)
+                    sender = mydic[i]["sender"]
+
+    # print("Mailde toplam " +str(i) +" adet link bulundu")
+            if need == 1:
+                print("Maili gönderen " + sender)
+
+threads = []
 while 0 < 1:
     find_links()
-    for dictionary in mydic:
-        mail_checked_list = []
-        i = 0
-        for url in dictionary["urls"]:
-            if not re.match(r"^https?", url):
-                url = "http://" + url
-            domain = re.findall(r"://([^/]+)/?", url)[0]
-            if re.match(r"^www.", domain):
-                domain = domain.replace("www.", "")
-            if domain not in url_checked_list:
-                url_checked_list.append(domain)
-                i += 1
-                if (RF.randomForestChecker(url) == url + " Kriter Testinden Geçemedi!!!"):
-                    print("Bir mailinizde tespit edilen " +url +" Kriter Testinden Geçemedi!!!")
-                    respond = RF.randomForestChecker(url)
-                    toaster.show_toast(respond)
-                    mail_checked_list.append(dictionary["sender"])
-                if (RF.randomForestChecker(url) != url + " Kriter Testinden Geçemedi!!!"):
-                    if FD.fakeDomainChecker(domain) != 0:
-                        print("Bir mailinizde tespit edilen " +domain +" domain adresi sahte olabilir! lütfen kontrol ediniz.")
-                        respond= domain +" domain adresi sahte olabilir! lütfen kontrol ediniz."
-                        toaster.show_toast(respond)
-                        mail_checked_list.append(dictionary["sender"])
+    try:
+        for i in range(len(mydic)):
+            t = threading.Thread(target=the_function, args = [mydic[i]["urls"]])
+            t.start()
+            threads.append(t)
+    except:
+        pass
 
-        #print("Mailde toplam " +str(i) +" adet link bulundu")
-        if dictionary["sender"] != None and "@" in dictionary["sender"] and dictionary["sender"] in mail_checked_list:
-            print("Maili gönderen " + dictionary["sender"])
+    try:
+        for thread in threads:
+            thread.join()
+    except:
+        pass
+
+    time.sleep(30)
 
 
-    time.sleep(60)
+
+
+
 
 
 

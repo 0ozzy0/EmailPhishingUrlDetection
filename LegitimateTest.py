@@ -1,5 +1,7 @@
+import concurrent.futures
 import ipaddress
 import re
+import pandas as pd
 import urllib.request
 from bs4 import BeautifulSoup
 import socket
@@ -9,7 +11,10 @@ import whois
 from datetime import datetime, date
 import time
 from dateutil.parser import parse as date_parse
+from openpyxl import load_workbook
 
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
+headers = {"user-agent" : USER_AGENT}
 
 def diff_month(d1, d2):
     return (d1.year - d2.year) * 12 + d1.month - d2.month
@@ -24,7 +29,7 @@ def generate_data_set(url):
         url = "http://" + url
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers = headers)
         soup = BeautifulSoup(response.text, 'html.parser')
     except:
         response = ""
@@ -261,7 +266,7 @@ def generate_data_set(url):
               data_set[12] = -1
         except:
             #print("request url 1")
-            data_set[12] = 1
+            data_set[12] = -1
 
     # url of anchor
     percentage = 0
@@ -292,7 +297,7 @@ def generate_data_set(url):
 
         except:
             #print("url of anchor 1")
-            data_set[13] = 1
+            data_set[13] = -1
 
 
     # links in tags
@@ -326,7 +331,7 @@ def generate_data_set(url):
                 data_set[14] = -1
         except:
             #print("link in tags 1")
-            data_set[14] = 1
+            data_set[14] = -1
 
 
         # SFH
@@ -449,7 +454,7 @@ def generate_data_set(url):
                 data_set[23] = 1
         except:
             #print("age of domain 1")
-            data_set[23] = 1
+            data_set[23] = -1
 
 
     #Dns record
@@ -495,11 +500,14 @@ def generate_data_set(url):
             data_set[26] = 1
     except:
         #print("page rank 1")
-        data_set[26] = 1
+        data_set[26] = -1
 
 
     #google index
-    site= search(url,5)
+    try:
+        site= search(url,5)
+    except:
+        site = None
 
     if site:
         #print("google index 1")
@@ -552,4 +560,26 @@ def generate_data_set(url):
 
 
 # CREDITS TO swagster420 ( https://github.com/swagster420/Phishing-Url-Detection-Using-Machine-Learning/blob/master/feature_extraction.py )
+
+
+"""data = pd.read_csv("verified_online.csv")
+data_frame = pd.DataFrame(data)
+wb = load_workbook("New_list.xlsx")
+ws = wb.worksheets[0]
+
+url_list = []
+
+for url in data_frame.iterrows():
+    url_list.append(url[1][0])
+
+for url2 in url_list:
+    ws.append(generate_data_set(url2))
+    wb.save("New_list.xlsx")
+
+if __name__ == '__main__':
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+       results = executor.map(generate_data_set, url_list)
+       for result in results:
+           ws.append(result)
+           wb.save("New_list.xlsx")"""
 
